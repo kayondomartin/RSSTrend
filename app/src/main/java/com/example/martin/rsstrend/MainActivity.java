@@ -4,6 +4,7 @@ package com.example.martin.rsstrend;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -78,6 +79,23 @@ public class MainActivity extends AppCompatActivity {
         };
         beaconManager.setRangingListener(rangingListener);
 
+        fileNameEditText = findViewById(R.id.fileName_editText);
+
+        fileNameEditText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER){
+                    if(fileNameEditText.getText().toString().trim() == null){
+                        Toast.makeText(MainActivity.this,"Enter file name",Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+
+                    startRanging();
+                }
+                return true;
+            }
+        });
+
         startButton = (Button) findViewById(R.id.start_button);
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,13 +105,9 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this,"Enter file name",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
-                    @Override
-                    public void onServiceReady() {
-                        beaconManager.startRanging(region);
-                        isRanging = true;
-                    }
-                });
+
+                startRanging();
+
             }
         });
 
@@ -112,11 +126,21 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void startRanging(){
+        beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
+            @Override
+            public void onServiceReady() {
+                beaconManager.startRanging(region);
+                isRanging = true;
+            }
+        });
+    }
+
     static {
-        if(isRanging){
+        if(isRanging && stopButton != null && startButton != null){
             startButton.setClickable(false);
             stopButton.setClickable(true);
-        }else{
+        }else if(stopButton != null && startButton != null){
             startButton.setClickable(true);
             stopButton.setClickable(false);
         }
