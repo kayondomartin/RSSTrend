@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">RSS Trend</string>
+    <string name="start_button_text">START</string>
+    <string name="stop_button_text">STOP</string>
+</resources>

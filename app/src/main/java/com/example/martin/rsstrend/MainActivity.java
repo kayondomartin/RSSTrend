@@ -10,6 +10,7 @@ import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
+import com.estimote.sdk.eddystone.Eddystone;
 
 import java.util.*;
 
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         region = new Region("ranged region",UUID.fromString(BeaconContract.Beacon3.UUID), BeaconContract.Beacon3.major, BeaconContract.Beacon3.minor);
+
 
     }
 
