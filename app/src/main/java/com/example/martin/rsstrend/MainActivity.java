@@ -4,6 +4,7 @@ package com.example.martin.rsstrend;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.estimote.sdk.Beacon;
@@ -22,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
     private Region region;
 
     private TextView textView;
+    private Button startButton;
+    private Button stopButton;
 
 
     @Override
@@ -38,11 +41,13 @@ public class MainActivity extends AppCompatActivity {
             public void onBeaconsDiscovered(Region region, List<Beacon> list) {
                 if(!list.isEmpty()){
                     Beacon nearestBeacon = list.get(0);
+
                     Log.d(LOG_TAG,"Nearest Places: "+ nearestBeacon.getRssi());
                     textView.setText(nearestBeacon.getRssi()+ " ");
                 }
             }
         });
+
 
         region = new Region("ranged region",UUID.fromString(BeaconContract.Beacon3.UUID), BeaconContract.Beacon3.major, BeaconContract.Beacon3.minor);
 

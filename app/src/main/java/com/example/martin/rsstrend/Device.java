@@ -22,8 +22,17 @@ public class Device {
         this.proximityUUID = proximityUUID;
     }
 
+    public void setPower(int power){
+        this.power = power;
+    }
+
+    public int getPower(){
+        return power;
+    }
+
     private String macAddress;
     private UUID proximityUUID;
+    private int power;
 
     Device(String name, int rssi){
         this.deviceName = name;
