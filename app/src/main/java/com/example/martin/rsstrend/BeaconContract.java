@@ -7,6 +7,7 @@ public class BeaconContract {
         public static final String UUID = "BCFE85CB-0666-8DEF-CD5D-719E6EA924F6";
         public static final int major = 41216;
         public static final int minor = 15619;
+        public static final int check = 0;
     }
 
 }
