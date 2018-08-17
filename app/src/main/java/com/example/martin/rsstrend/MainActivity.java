@@ -1,6 +1,7 @@
 package com.example.martin.rsstrend;
 
 
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +18,7 @@ import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
 import com.estimote.sdk.eddystone.Eddystone;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -56,21 +58,13 @@ public class MainActivity extends AppCompatActivity {
                     String address = gotBeacon.getMacAddress().toString();
                     int rssi = gotBeacon.getRssi();
 
+                    String fileContents = address+"\t"+rssi+"\n";
 
-                    try {
-                        fileOutputStream = new FileOutputStream(fileName,true);
-                        FileWriter fileWriter;
+                    try{
+                        fileOutputStream = openFileOutput(fileName,Context.MODE_APPEND);
+                        fileOutputStream.write(fileContents.getBytes());
+                        fileOutputStream.close();
 
-                        try{
-                            fileWriter = new FileWriter(fileOutputStream.getFD());
-                            fileWriter.write(address+"\t"+rssi+"\n");
-                            fileWriter.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }finally {
-                            fileOutputStream.getFD().sync();
-                            fileOutputStream.close();
-                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
