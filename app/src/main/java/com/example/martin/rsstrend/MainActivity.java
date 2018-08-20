@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.estimote.sdk.Beacon;
@@ -29,10 +30,15 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText fileNameEditText;
     private Button startButton;
+    private TextView rssiTextView;
 
     private boolean isRanging = false;
 
     private FileOutputStream fileOutputStream;
+
+    private  Calendar calendar;
+
+
 
 
     @Override
@@ -40,7 +46,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        calendar = Calendar.getInstance();
+
         beaconManager = new BeaconManager(this);
+
+        rssiTextView = findViewById(R.id.rssi_textview);
 
         rangingListener = new BeaconManager.RangingListener() {
             @Override
@@ -50,8 +60,20 @@ public class MainActivity extends AppCompatActivity {
                     String fileName = fileNameEditText.getText().toString().trim() + ".txt";
                     String address = gotBeacon.getMacAddress().toString();
                     int rssi = gotBeacon.getRssi();
+                    rssiTextView.setText("RSSI: "+rssi);
 
-                    String fileContents = address+"\t"+rssi+"\n";
+                    int year = calendar.get(Calendar.YEAR);
+                    int month = calendar.get(Calendar.MONTH);
+                    int day = calendar.get(Calendar.DAY_OF_MONTH);
+                    int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                    int minute = calendar.get(Calendar.MINUTE);
+                    int seconds = calendar.get(Calendar.SECOND);
+                    long current_time = System.currentTimeMillis();
+
+                    // String time = year+"/"+month+"/"+day+"-"+hour+":"+minute+":"+seconds;
+                    String time = current_time + "";
+
+                    String fileContents = address+"\t"+rssi+"\t"+time+"\n";
 
                     try{
                         fileOutputStream = openFileOutput(fileName,Context.MODE_APPEND);
@@ -71,12 +93,14 @@ public class MainActivity extends AppCompatActivity {
         fileNameEditText.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER){
-                    if(fileNameEditText.getText().toString().trim() == null || fileNameEditText.getText().toString().isEmpty()){
-                        Toast.makeText(MainActivity.this,"Enter file name",Toast.LENGTH_SHORT).show();
-                        return false;
-                    }else{
-                        startRanging();
+                if(keyEvent.getAction() == KeyEvent.ACTION_DOWN){
+                    if(i == KeyEvent.KEYCODE_ENTER) {
+                        if (fileNameEditText.getText().toString().trim() == null || fileNameEditText.getText().toString().isEmpty()) {
+                            Toast.makeText(MainActivity.this, "Enter file name", Toast.LENGTH_SHORT).show();
+                            return false;
+                        } else {
+                            startRanging();
+                        }
                     }
                 }
                 return true;
@@ -92,7 +116,11 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this,"Enter file name",Toast.LENGTH_SHORT).show();
                     return;
                 }else{
-                    startRanging();
+                    if(isRanging){
+                        stopRanging();
+                    }else{
+                        startRanging();
+                    }
                 }
 
             }
@@ -134,7 +162,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         SystemRequirementsChecker.checkWithDefaultDialogs(this);
-        startRanging();
     }
 
     @Override

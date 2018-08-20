@@ -58,7 +58,7 @@ public class MyApplication extends Application {
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
                 .build();
-        notification.defaults |= Notification.DEFAULT_SOUND;
+        notification.defaults |= Notification.DEFAULT_VIBRATE;
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1,notification);
 
