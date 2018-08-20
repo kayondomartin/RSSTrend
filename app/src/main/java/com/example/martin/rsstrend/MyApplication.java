@@ -17,6 +17,7 @@ import java.util.UUID;
 public class MyApplication extends Application {
 
     private BeaconManager beaconManager;
+    private Region region;
 
 
     @Override
@@ -25,10 +26,12 @@ public class MyApplication extends Application {
 
         beaconManager = new BeaconManager(getApplicationContext());
 
+        region = new Region("monitored region",UUID.fromString(BeaconContract.Beacon3.UUID), BeaconContract.Beacon3.major, BeaconContract.Beacon3.minor);
+
         beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
             @Override
             public void onServiceReady() {
-                beaconManager.startMonitoring(new Region("monitored region", UUID.fromString(BeaconContract.Beacon3.UUID),BeaconContract.Beacon3.major, BeaconContract.Beacon3.minor));
+                beaconManager.startMonitoring(region);
 
                 beaconManager.setMonitoringListener(new BeaconManager.MonitoringListener() {
                     @Override
@@ -61,8 +64,13 @@ public class MyApplication extends Application {
         notification.defaults |= Notification.DEFAULT_VIBRATE;
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1,notification);
-
-
-
     }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        beaconManager.stopMonitoring(region);
+    }
+
+
 }

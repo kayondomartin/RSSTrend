@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +19,8 @@ import com.estimote.sdk.SystemRequirementsChecker;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -30,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText fileNameEditText;
     private Button startButton;
+    private ProgressBar progressBar;
     private TextView rssiTextView;
 
     private boolean isRanging = false;
@@ -51,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
         beaconManager = new BeaconManager(this);
 
         rssiTextView = findViewById(R.id.rssi_textview);
+        progressBar = findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.GONE);
+
+
 
         rangingListener = new BeaconManager.RangingListener() {
             @Override
@@ -62,18 +70,16 @@ public class MainActivity extends AppCompatActivity {
                     int rssi = gotBeacon.getRssi();
                     rssiTextView.setText("RSSI: "+rssi);
 
-                    int year = calendar.get(Calendar.YEAR);
-                    int month = calendar.get(Calendar.MONTH);
-                    int day = calendar.get(Calendar.DAY_OF_MONTH);
-                    int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    int minute = calendar.get(Calendar.MINUTE);
-                    int seconds = calendar.get(Calendar.SECOND);
                     long current_time = System.currentTimeMillis();
 
-                    // String time = year+"/"+month+"/"+day+"-"+hour+":"+minute+":"+seconds;
-                    String time = current_time + "";
+                    Date date = new Date(current_time);
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    String time = dateFormat.format(date);
 
-                    String fileContents = address+"\t"+rssi+"\t"+time+"\n";
+                    // String time = year+"/"+month+"/"+day+"-"+hour+":"+minute+":"+seconds;
+                    //String time = (current_time/60000) + "";
+
+                    String fileContents = address+"\t"+rssi+"\t"+current_time/1000+"\n";
 
                     try{
                         fileOutputStream = openFileOutput(fileName,Context.MODE_APPEND);
@@ -100,10 +106,11 @@ public class MainActivity extends AppCompatActivity {
                             return false;
                         } else {
                             startRanging();
+                            return  true;
                         }
                     }
                 }
-                return true;
+                return false;
             }
         });
 
@@ -138,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 beaconManager.startRanging(region);
                 fileNameEditText.setEnabled(false);
                 startButton.setText("STOP");
+                progressBar.setVisibility(View.VISIBLE);
                 isRanging = true;
             }
         });
@@ -150,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
             beaconManager.stopRanging(region);
             fileNameEditText.setEnabled(true);
             startButton.setText("START");
+            progressBar.setVisibility(View.GONE);
             isRanging = false;
         }
     }
@@ -168,5 +177,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         beaconManager.stopRanging(region);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        getApplication().onTerminate();
     }
 }
