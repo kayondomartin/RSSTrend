@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="16dp"
     tools:context=".MainActivity">
 
 
@@ -21,13 +22,43 @@
 
     <TextView
         android:layout_width="wrap_content"
+        android:id="@+id/rssi_label_textview"
+        android:layout_height="wrap_content"
+        android:text="RSSI: "
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toEndOf="@id/ellapsed_time_textview"
+        app:layout_constraintBottom_toBottomOf="@id/ellapsed_time_textview"
+        app:layout_constraintTop_toTopOf="@id/ellapsed_time_textview"/>
+    <TextView
+        android:layout_width="60dp"
         android:layout_height="wrap_content"
         android:id="@+id/rssi_textview"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/rssi_label_textview"
+        android:layout_marginLeft="8dp"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/rssi_label_textview"
+        android:text="-000"
+        app:layout_constraintBottom_toBottomOf="@id/rssi_label_textview"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:id="@+id/timer_label_view"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/progress_bar"
-        tools:text="00.00"
-        app:layout_constraintBottom_toTopOf="@id/start_button"/>
+        app:layout_constraintBottom_toTopOf="@id/start_button"
+        android:text="Timer: "/>
+
+    <TextView
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/ellapsed_time_textview"
+        android:layout_marginStart="8dp"
+        app:layout_constraintTop_toTopOf="@id/timer_label_view"
+        app:layout_constraintBottom_toBottomOf="@id/timer_label_view"
+        app:layout_constraintStart_toEndOf="@id/timer_label_view"
+        android:text="00.00"
+        />
 
     <ProgressBar
         android:layout_width="wrap_content"
@@ -44,9 +75,20 @@
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="16dp"
         android:text="@string/start_button_text"
         android:layout_marginBottom="60dp" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/step_note_button"
+        android:text="STEP NOTE"
+        app:layout_constraintLeft_toRightOf="@id/start_button"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/start_button"
+        app:layout_constraintBottom_toBottomOf="@id/start_button"
+        android:layout_marginLeft="16dp"/>
+
 
 
 </android.support.constraint.ConstraintLayout>

@@ -10,6 +10,7 @@ import android.content.Intent;
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
+import com.estimote.sdk.eddystone.Eddystone;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,8 @@ public class MyApplication extends Application {
         super.onCreate();
 
         beaconManager = new BeaconManager(getApplicationContext());
+        beaconManager.setForegroundScanPeriod(50,50);
+        beaconManager.setBackgroundScanPeriod(50,50);
 
         region = new Region("monitored region",UUID.fromString(BeaconContract.Beacon3.UUID), BeaconContract.Beacon3.major, BeaconContract.Beacon3.minor);
 
@@ -74,3 +77,4 @@ public class MyApplication extends Application {
 
 
 }
+
