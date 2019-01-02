@@ -10,7 +10,12 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
@@ -27,19 +32,31 @@ import android.widget.Toast;
 
 import com.estimote.sdk.SystemRequirementsChecker;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import com.example.martin.rsstrend.Constants;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private TextView rssiTextView;
     private TextView ellapsedTimeTextView;
     private EditText fileNameEditText;
     private Button startButton;
     private ProgressBar scanningProgressBar;
+
+    private SensorManager sensorManager;
+    private Map<String, Sensor> sensorsMap;
+
+    private long lastUpdate = 0;
+    private float last_x, last_y, last_z;
+    private static final int SHAKE_THRESHOLD = 600;
 
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -48,8 +65,11 @@ public class MainActivity extends AppCompatActivity{
     private static final byte DATA_PREAMBLE = (byte) 0xAA;
     private static final ParcelUuid EDDYSTONE_SERVICE_UUID = ParcelUuid.fromString("0000FEAA-0000-1000-8000-00805F9B34FB");
 
-    private FileOutputStream fileOutputStream;
-    private FileOutputStream stepFileOutputStream;
+    private FileOutputStream
+            fileOutputStream,
+            accelerometerRecords,
+            gyroscopeRecords,
+            stepFileOutputStream;
 
     private static long seconds = 0;
     private static String fileName = "";
@@ -96,6 +116,13 @@ public class MainActivity extends AppCompatActivity{
         fileNameEditText = findViewById(R.id.fileName_editText);
         scanningProgressBar.setVisibility(View.GONE);
         stepNoteButton = findViewById(R.id.step_note_button);
+
+        sensorsMap = new LinkedHashMap<>();
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensorsMap.put(Constants.ACCKey, sensorManager.getDefaultSensor(Constants.ACCType));
+        sensorsMap.put(Constants.GYROKey,sensorManager.getDefaultSensor(Constants.GYROType));
+
+
 
         stepNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -162,6 +189,17 @@ public class MainActivity extends AppCompatActivity{
         SystemRequirementsChecker.checkWithDefaultDialogs(this);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    private void registerSensorListeners(){
+        sensorManager.registerListener(this,sensorsMap.get(Constants.ACCKey),sensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this,sensorsMap.get(Constants.GYROKey),sensorManager.SENSOR_DELAY_NORMAL);
+    }
+
     private ScanCallback scanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
@@ -173,7 +211,9 @@ public class MainActivity extends AppCompatActivity{
             rssiTextView.setText(rssi+"");
 
             try{
-                fileOutputStream.write(record.getBytes());
+                if(fileOutputStream != null) {
+                    fileOutputStream.write(record.getBytes());
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -187,13 +227,17 @@ public class MainActivity extends AppCompatActivity{
             fileName = fileNameEditText.getText().toString().trim()+".txt";
             String stepNoteFN = fileNameEditText.getText().toString()+"_stepNote"+".txt";
             try {
-                fileOutputStream = openFileOutput(fileName,MODE_APPEND);
-                stepFileOutputStream = openFileOutput(stepNoteFN,MODE_APPEND);
+                fileOutputStream = new FileOutputStream(fileName, false);
+                stepFileOutputStream = new FileOutputStream(stepNoteFN, false);
+                accelerometerRecords = new FileOutputStream("accelerometer.txt", false);
+                gyroscopeRecords = new FileOutputStream("gyroscope.txt", false);
+
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
 
-           bleScanner.startScan(SCAN_FILTERS,SCAN_SETTINGS, scanCallback);
+            bleScanner.startScan(SCAN_FILTERS,SCAN_SETTINGS, scanCallback);
+            registerSensorListeners();
             startTimer();
             scanningProgressBar.setVisibility(View.VISIBLE);
             startButton.setText("STOP");
@@ -227,6 +271,7 @@ public class MainActivity extends AppCompatActivity{
 
     private void stopScan(){
         bleScanner.stopScan(scanCallback);
+        sensorManager.unregisterListener(this);
         stopTimer();
         scanningProgressBar.setVisibility(View.GONE);
         startButton.setText("START");
@@ -234,10 +279,49 @@ public class MainActivity extends AppCompatActivity{
         try{
             fileOutputStream.close();
             stepFileOutputStream.close();
+            accelerometerRecords.close();
+            gyroscopeRecords.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         isScanning = false;
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        Sensor sensor = sensorEvent.sensor;
+
+        if(sensor.getType() == Constants.ACCType){
+            updateSensorRecords(Constants.ACCType, sensorEvent.values);
+        }
+        if(sensor.getType() == Constants.GYROType){
+            updateSensorRecords(Constants.GYROType, sensorEvent.values);
+        }
+    }
+
+    private void updateSensorRecords(int type, float[] values){
+        String record = seconds + "\t" +values[0]+"\t"+values[1]+"\t"+values[2]+"\n";
+        try{
+            switch (type){
+                case Sensor.TYPE_ACCELEROMETER:
+                    accelerometerRecords.write(record.getBytes());
+                    break;
+                case Sensor.TYPE_GYROSCOPE:
+                    gyroscopeRecords.write(record.getBytes());
+                    break;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e){
+            e.printStackTrace();
+        }finally {
+
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
     }
 }
